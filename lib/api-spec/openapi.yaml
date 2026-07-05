@@ -1,0 +1,550 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: LloroLog API - Cry tracking app
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User operations
+  - name: cries
+    description: Cry log operations
+  - name: stats
+    description: Statistics and analytics
+  - name: calm
+    description: Calm corner / AI poem generation
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users in the group
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{userId}:
+    get:
+      operationId: getUserProfile
+      tags: [users]
+      summary: Get a user's public profile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /cries:
+    get:
+      operationId: listCries
+      tags: [cries]
+      summary: List cry logs (own or all users)
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+          description: Filter by userId; omit for all users
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of cries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cry"
+    post:
+      operationId: createCry
+      tags: [cries]
+      summary: Log a new cry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CryInput"
+      responses:
+        "201":
+          description: Created cry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cry"
+        "401":
+          description: Unauthorized
+
+  /cries/{id}:
+    get:
+      operationId: getCry
+      tags: [cries]
+      summary: Get a single cry log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cry"
+    patch:
+      operationId: updateCry
+      tags: [cries]
+      summary: Update own cry log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CryPatch"
+      responses:
+        "200":
+          description: Updated cry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cry"
+    delete:
+      operationId: deleteCry
+      tags: [cries]
+      summary: Delete own cry log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /stats/heatmap:
+    get:
+      operationId: getHeatmap
+      tags: [stats]
+      summary: GitHub-style heatmap data (cries per day)
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+          description: Specific user; omit for group heatmap
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Heatmap data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HeatmapDay"
+
+  /stats/trends:
+    get:
+      operationId: getTrends
+      tags: [stats]
+      summary: Trend analysis - weekday/hour patterns, type breakdowns
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Trend stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendStats"
+
+  /stats/wrapped:
+    get:
+      operationId: getWrapped
+      tags: [stats]
+      summary: Annual Cry Wrapped summary
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+          description: Specific user; omit for group wrapped
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Wrapped summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WrappedSummary"
+
+  /stats/overview:
+    get:
+      operationId: getStatsOverview
+      tags: [stats]
+      summary: High-level stats (total cries, avg intensity, most common type)
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Overview stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsOverview"
+
+  /calm/poem:
+    post:
+      operationId: generatePoem
+      tags: [calm]
+      summary: Generate a comforting Lorca-inspired poem for the calm corner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PoemRequest"
+      responses:
+        "200":
+          description: Generated poem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoemResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    User:
+      type: object
+      required: [id, clerkId, name, email, createdAt]
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Cry:
+      type: object
+      required: [id, userId, userName, intensity, occurredAt, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: string
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 10
+        occurredAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: ["integer", "null"]
+        reason:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        wasAlone:
+          type: ["boolean", "null"]
+        cryType:
+          type: ["string", "null"]
+          description: "Tristeza | Estrés | Felicidad | Nostalgia | Frustración | Película/Arte | Cortando cebolla"
+        trigger:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    CryInput:
+      type: object
+      required: [intensity, occurredAt]
+      properties:
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 10
+        occurredAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: ["integer", "null"]
+        reason:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        wasAlone:
+          type: ["boolean", "null"]
+        cryType:
+          type: ["string", "null"]
+        trigger:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    CryPatch:
+      type: object
+      properties:
+        intensity:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 10
+        occurredAt:
+          type: ["string", "null"]
+          format: date-time
+        durationMinutes:
+          type: ["integer", "null"]
+        reason:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        wasAlone:
+          type: ["boolean", "null"]
+        cryType:
+          type: ["string", "null"]
+        trigger:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    HeatmapDay:
+      type: object
+      required: [date, count]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+        totalIntensity:
+          type: integer
+
+    TrendStats:
+      type: object
+      required: [byWeekday, byHour, byType, byLocation, aloneVsCompany]
+      properties:
+        byWeekday:
+          type: array
+          items:
+            type: object
+            required: [weekday, count, avgIntensity]
+            properties:
+              weekday:
+                type: string
+              count:
+                type: integer
+              avgIntensity:
+                type: number
+        byHour:
+          type: array
+          items:
+            type: object
+            required: [hour, count]
+            properties:
+              hour:
+                type: integer
+              count:
+                type: integer
+        byType:
+          type: array
+          items:
+            type: object
+            required: [cryType, count, avgIntensity]
+            properties:
+              cryType:
+                type: string
+              count:
+                type: integer
+              avgIntensity:
+                type: number
+        byLocation:
+          type: array
+          items:
+            type: object
+            required: [location, count]
+            properties:
+              location:
+                type: string
+              count:
+                type: integer
+        aloneVsCompany:
+          type: object
+          required: [alone, withOthers]
+          properties:
+            alone:
+              type: integer
+            withOthers:
+              type: integer
+        peakInsight:
+          type: ["string", "null"]
+          description: "Natural language insight like: tus picos son los martes por la tarde"
+
+    WrappedSummary:
+      type: object
+      required: [year, totalCries, avgIntensity, mostEmotionalMonth, topCryType, longestSessionMinutes, longestStreak]
+      properties:
+        year:
+          type: integer
+        totalCries:
+          type: integer
+        avgIntensity:
+          type: number
+        mostEmotionalMonth:
+          type: string
+        topCryType:
+          type: ["string", "null"]
+        longestSessionMinutes:
+          type: ["integer", "null"]
+        longestStreak:
+          type: integer
+          description: Consecutive days with at least one cry
+        mostEmotionalDay:
+          type: ["string", "null"]
+        totalDurationMinutes:
+          type: ["integer", "null"]
+        topInsight:
+          type: ["string", "null"]
+
+    StatsOverview:
+      type: object
+      required: [totalCries, avgIntensity, thisMonth, thisWeek]
+      properties:
+        totalCries:
+          type: integer
+        avgIntensity:
+          type: number
+        thisMonth:
+          type: integer
+        thisWeek:
+          type: integer
+        topCryType:
+          type: ["string", "null"]
+        mostActiveUser:
+          type: ["string", "null"]
+
+    PoemRequest:
+      type: object
+      required: [intensity]
+      properties:
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 10
+        cryType:
+          type: ["string", "null"]
+        trigger:
+          type: ["string", "null"]
+
+    PoemResponse:
+      type: object
+      required: [poem, breathingGuide]
+      properties:
+        poem:
+          type: string
+        breathingGuide:
+          type: string
+        supportMessage:
+          type: ["string", "null"]
