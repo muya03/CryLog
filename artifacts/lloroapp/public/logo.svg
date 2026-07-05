@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tearGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C4B5FD" /> <!-- Lavender -->
+      <stop offset="100%" stop-color="#93C5FD" /> <!-- Mist Blue -->
+    </linearGradient>
+  </defs>
+  <path d="M50,15 C50,15 25,50 25,70 C25,85 35,95 50,95 C65,95 75,85 75,70 C75,50 50,15 50,15 Z" fill="url(#tearGrad)" opacity="0.9" />
+  <circle cx="40" cy="65" r="5" fill="#FFFFFF" opacity="0.5" />
+  <circle cx="48" cy="55" r="2" fill="#FFFFFF" opacity="0.4" />
+</svg>
