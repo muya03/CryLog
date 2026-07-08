@@ -101,7 +101,7 @@ Browser (React + Vite)
         │  HTTPS  /api/       → API Server (puerto 8080)
         │  HTTPS  /clerk/     → Proxy Clerk (gestionado por Express)
         ▼
-   Reverse Proxy (Replit / NGINX en producción)
+   Reverse Proxy (NGINX en producción)
         │
         ├── artifacts/lloroapp      React SPA
         └── artifacts/api-server    Express API
