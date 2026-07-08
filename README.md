@@ -359,7 +359,7 @@ Esto lanza el API y el frontend juntos en la misma terminal con salida coloreada
 | API | http://localhost:8080/api/healthz |
 | Adminer (BD) | http://localhost:8888 |
 
-> El frontend usa `vite.config.local.ts` en lugar del config de Replit. La diferencia clave es que añade un proxy para `/api → localhost:8080`, lo que hace que las llamadas al backend funcionen exactamente igual que en Replit.
+> El frontend usa `vite.config.local.ts` en lugar del config de Replit. La diferencia clave es que añade un proxy para `/api → localhost:8080`, lo que hace que las llamadas al backend funcionen.
 
 ### Scripts disponibles desde la raíz
 
